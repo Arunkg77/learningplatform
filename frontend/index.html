@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LearnHub – Online Learning Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div id="auth-overlay" class="auth-overlay hidden">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuth()">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="signin-form" class="auth-form">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Continue your learning journey</p>
+      <input type="email" id="signin-email" placeholder="Email address" />
+      <input type="password" id="signin-password" placeholder="Password" />
+      <button class="btn-primary" onclick="handleSignIn()">Sign In</button>
+      <p class="auth-switch">Don't have an account? <span onclick="switchTab('signup')">Sign up</span></p>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="signup-form" class="auth-form hidden">
+      <h2>Create account</h2>
+      <p class="auth-sub">Start learning today — it's free</p>
+      <input type="text" id="signup-name" placeholder="Full name" />
+      <input type="email" id="signup-email" placeholder="Email address" />
+      <input type="password" id="signup-password" placeholder="Password (min 6 chars)" />
+      <button class="btn-primary" onclick="handleSignUp()">Create Account</button>
+      <p class="auth-switch">Already have an account? <span onclick="switchTab('signin')">Sign in</span></p>
+    </div>
+
+    <div id="auth-error" class="auth-error hidden"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Learn<span>Hub</span></a>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="dashboard.html">My Courses</a>
+    </nav>
+    <div id="auth-area">
+      <button class="btn-ghost" onclick="openAuth('signin')">Sign In</button>
+      <button class="btn-primary small" onclick="openAuth('signup')">Get Started</button>
+    </div>
+    <div id="user-area" class="hidden">
+      <span id="user-greeting"></span>
+      <button class="btn-ghost small" onclick="handleLogout()">Log out</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🎓 10,000+ learners enrolled</div>
+    <h1>Learn New Skills<br/><em>Without Limits</em></h1>
+    <p>Browse expert-led courses in Java, Web Dev, Spring Boot and more. Learn at your own pace, track your progress, earn certificates.</p>
+    <div class="hero-cta">
+      <a href="courses.html" class="btn-primary large">Browse Courses</a>
+      <a href="dashboard.html" class="btn-outline large">My Dashboard</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="floating-card c1"><span>☕</span> Java Basics<br/><small>6 Weeks</small></div>
+    <div class="floating-card c2"><span>🌐</span> Web Dev<br/><small>8 Weeks</small></div>
+    <div class="floating-card c3"><span>🍃</span> Spring Boot<br/><small>5 Weeks</small></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container">
+    <h2 class="section-title">Why LearnHub?</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📹</div>
+        <h3>Curated Videos</h3>
+        <p>Each course features hand-picked YouTube lessons from top educators.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Track Progress</h3>
+        <p>Mark lessons complete and see your progress grow in real time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Learn Anywhere</h3>
+        <p>Fully responsive. Learn on desktop, tablet, or mobile.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔖</div>
+        <h3>Save Your Courses</h3>
+        <p>Enroll once, access forever. Your progress is always saved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>© 2025 LearnHub · Built with Java Spring Boot & Passion</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

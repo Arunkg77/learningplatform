@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Course Detail – LearnHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div id="auth-overlay" class="auth-overlay hidden">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuth()">✕</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div id="signin-form" class="auth-form">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Continue your learning journey</p>
+      <input type="email" id="signin-email" placeholder="Email address" />
+      <input type="password" id="signin-password" placeholder="Password" />
+      <button class="btn-primary" onclick="handleSignIn()">Sign In</button>
+      <p class="auth-switch">Don't have an account? <span onclick="switchTab('signup')">Sign up</span></p>
+    </div>
+    <div id="signup-form" class="auth-form hidden">
+      <h2>Create account</h2>
+      <p class="auth-sub">Start learning today — it's free</p>
+      <input type="text" id="signup-name" placeholder="Full name" />
+      <input type="email" id="signup-email" placeholder="Email address" />
+      <input type="password" id="signup-password" placeholder="Password (min 6 chars)" />
+      <button class="btn-primary" onclick="handleSignUp()">Create Account</button>
+      <p class="auth-switch">Already have an account? <span onclick="switchTab('signin')">Sign in</span></p>
+    </div>
+    <div id="auth-error" class="auth-error hidden"></div>
+  </div>
+</div>
+
+<header id="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">Learn<span>Hub</span></a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="dashboard.html">My Courses</a>
+    </nav>
+    <div id="auth-area">
+      <button class="btn-ghost" onclick="openAuth('signin')">Sign In</button>
+      <button class="btn-primary small" onclick="openAuth('signup')">Get Started</button>
+    </div>
+    <div id="user-area" class="hidden">
+      <span id="user-greeting"></span>
+      <button class="btn-ghost small" onclick="handleLogout()">Log out</button>
+    </div>
+  </div>
+</header>
+
+<div class="container page-body">
+  <div id="course-detail-root"></div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>© 2025 LearnHub · Built with Java Spring Boot & Passion</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script>
+/* =============================================
+   course-detail.js (inline)
+   Renders course info + curated YouTube videos
+   ============================================= */
+
+// Curated YouTube video IDs per course id
+const COURSE_VIDEOS = {
+  1: [ // Java Basics
+    { id: "eIrMbAQkIG4", title: "Java Full Course for Beginners",          channel: "Bro Code" },
+    { id: "xk4_1vDrzzo", title: "Java Tutorial for Beginners",             channel: "Programming with Mosh" },
+    { id: "ntLJmHOJ4xE", title: "Java OOP Full Course",                    channel: "Amigoscode" },
+    { id: "A74TOX803D0", title: "Java Collections Framework",              channel: "Telusko" },
+  ],
+  2: [ // Web Development
+    { id: "G3e-cpL7ofc", title: "HTML & CSS Full Course – Beginner",       channel: "SuperSimpleDev" },
+    { id: "PkZNo7MFNFg", title: "Learn JavaScript – Full Course",          channel: "freeCodeCamp" },
+    { id: "zJSY8tbf_ys", title: "CSS Tutorial – Full Course",              channel: "Dave Gray" },
+    { id: "EerdGm-ehJQ", title: "JavaScript DOM Manipulation",             channel: "Traversy Media" },
+  ],
+  3: [ // Spring Boot
+    { id: "9SGDpanrc8U", title: "Spring Boot 3 Tutorial – Full Course",    channel: "Amigoscode" },
+    { id: "vtPkZShrvXQ", title: "Spring Boot REST API Crash Course",       channel: "Teddy Smith" },
+    { id: "31KTdfRH6nY", title: "Spring Boot + MySQL CRUD Tutorial",       channel: "Programming with Mosh" },
+    { id: "UgX5lgv4uVM", title: "Spring Security 6 Tutorial",             channel: "Amigoscode" },
+  ],
+};
+
+const MOCK_COURSES = [
+  { id: 1, title: "Java Basics",       description: "Learn Java fundamentals from scratch — variables, OOP, collections, and more.", duration: "6 Weeks", emoji: "☕" },
+  { id: 2, title: "Web Development",   description: "Master HTML, CSS, and JavaScript to build beautiful, interactive web pages.",   duration: "8 Weeks", emoji: "🌐" },
+  { id: 3, title: "Spring Boot",       description: "Build production-grade REST APIs and backend services with Spring Boot.",        duration: "5 Weeks", emoji: "🍃" },
+];
+
+const EMOJIS = { 1: "☕", 2: "🌐", 3: "🍃" };
+
+const params   = new URLSearchParams(window.location.search);
+const courseId = parseInt(params.get("id")) || 1;
+const root     = document.getElementById("course-detail-root");
+
+fetch(`http://localhost:8080/courses/${courseId}`)
+  .then(r => r.json())
+  .then(renderDetail)
+  .catch(() => {
+    const fallback = MOCK_COURSES.find(c => c.id === courseId) || MOCK_COURSES[0];
+    renderDetail(fallback);
+  });
+
+function isEnrolled(id) {
+  const list = JSON.parse(localStorage.getItem("myCourses")) || [];
+  return list.includes(id);
+}
+
+function enrollFromDetail(id, btn) {
+  const user = JSON.parse(localStorage.getItem("lh_user"));
+  if (!user) { openAuth("signin"); return; }
+
+  let courses = JSON.parse(localStorage.getItem("myCourses")) || [];
+  if (!courses.includes(id)) {
+    courses.push(id);
+    localStorage.setItem("myCourses", JSON.stringify(courses));
+  }
+
+  btn.outerHTML = `<span class="enrolled-badge">✓ Enrolled</span>`;
+  showToast("Enrolled! Check your dashboard to track progress.");
+}
+
+function renderDetail(course) {
+  if (!root) return;
+  const emoji    = EMOJIS[course.id] || "📚";
+  const enrolled = isEnrolled(course.id);
+  const videos   = COURSE_VIDEOS[course.id] || [];
+
+  root.innerHTML = `
+    <!-- Course Hero -->
+    <div class="course-detail-hero">
+      <div class="course-detail-info">
+        <div style="font-size:52px;margin-bottom:16px">${emoji}</div>
+        <h1>${course.title}</h1>
+        <p>${course.description}</p>
+        <div class="course-meta" style="margin-bottom:0">
+          <span class="tag accent">⏱ ${course.duration}</span>
+          <span class="tag">${videos.length} Curated Videos</span>
+        </div>
+        <div class="course-detail-actions">
+          ${enrolled
+            ? `<span class="enrolled-badge">✓ Enrolled</span>`
+            : `<button class="btn-primary" id="enroll-btn" onclick="enrollFromDetail(${course.id}, this)">Enroll Now</button>`
+          }
+          <a href="dashboard.html" class="btn-ghost">My Dashboard</a>
+          <a href="courses.html" class="btn-ghost">← All Courses</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Videos Section -->
+    <div class="videos-section">
+      <h2>📹 Curated Learning Videos</h2>
+      <div class="video-grid">
+        ${videos.map(v => `
+          <div class="video-card">
+            <div class="video-thumb">
+              <iframe
+                src="https://www.youtube.com/embed/${v.id}"
+                title="${v.title}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                loading="lazy">
+              </iframe>
+            </div>
+            <div class="video-info">
+              <h4>${v.title}</h4>
+              <p>📺 ${v.channel}</p>
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  // Update page title
+  document.title = `${course.title} – LearnHub`;
+}
+</script>
+</body>
+</html>
